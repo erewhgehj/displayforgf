@@ -15,57 +15,41 @@
         
         h1 {
             text-align: center;
+            font-size: 32px;
         }
         
         .section {
             background: white;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
         }
         
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: bold;
-        }
-        
-        .images {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .images button {
-            flex: 1;
-            padding: 15px;
-            font-size: 24px;
-            border: 2px solid #ddd;
-            background: white;
-            cursor: pointer;
-        }
-        
-        .images button.selected {
-            border-color: blue;
-            background: #e3f2fd;
+            font-size: 18px;
         }
         
         textarea {
             width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 15px;
+            font-size: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
             box-sizing: border-box;
+            min-height: 120px;
         }
         
         button.send {
             width: 100%;
-            padding: 15px;
-            font-size: 18px;
+            padding: 20px;
+            font-size: 24px;
             background: blue;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
         }
         
@@ -74,10 +58,11 @@
         }
         
         .status {
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
             text-align: center;
+            font-size: 18px;
             display: none;
         }
         
@@ -93,20 +78,11 @@
     </style>
 </head>
 <body>
-    <h1>Send me a Message</h1>
+    <h1>Send Message</h1>
     
     <div class="section">
-        <label>Image:</label>
-        <div class="images">
-            <button class="selected" onclick="selectImage('heart')">❤️</button>
-            <button onclick="selectImage('star')">⭐</button>
-            <button onclick="selectImage('smiley')">😊</button>
-        </div>
-    </div>
-    
-    <div class="section">
-        <label>Message:</label>
-        <textarea id="msg" rows="4" placeholder="Type your message..."></textarea>
+        <label>Your Message:</label>
+        <textarea id="msg" placeholder="Message here..."></textarea>
     </div>
     
     <button class="send" onclick="send()">Send</button>
@@ -121,38 +97,22 @@
         const USER = d(_0x1a2b);
         const KEY = d(_0x3c4d);
         
-        let image = 'heart';
-        
-        function selectImage(img) {
-            image = img;
-            document.querySelectorAll('.images button').forEach(b => {
-                b.classList.remove('selected');
-            });
-            event.target.classList.add('selected');
-        }
-        
         async function send() {
             const msg = document.getElementById('msg').value.trim();
             
             if (!msg) {
-                showStatus('Enter a message!', 'error');
+                showStatus('Enter a message', 'error');
                 return;
             }
             
             try {
-                await fetch(`https://io.adafruit.com/api/v2/${USER}/feeds/image/data`, {
-                    method: 'POST',
-                    headers: {'X-AIO-Key': KEY, 'Content-Type': 'application/json'},
-                    body: JSON.stringify({value: image})
-                });
-                
                 await fetch(`https://io.adafruit.com/api/v2/${USER}/feeds/message/data`, {
                     method: 'POST',
                     headers: {'X-AIO-Key': KEY, 'Content-Type': 'application/json'},
                     body: JSON.stringify({value: msg})
                 });
                 
-                showStatus('Sent! ✓', 'success');
+                showStatus('Sent :D', 'success');
                 document.getElementById('msg').value = '';
             } catch(e) {
                 showStatus('Failed!', 'error');
