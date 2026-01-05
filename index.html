@@ -3,26 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Message</title>
+    <title>Heart Rate Monitor Dashboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 400px;
-            margin: 50px auto;
+            max-width: 500px;
+            margin: 20px auto;
             padding: 20px;
-            background: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
         
         h1 {
             text-align: center;
             font-size: 32px;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
         .section {
             background: white;
             padding: 20px;
-            margin: 20px 0;
-            border-radius: 10px;
+            margin: 15px 0;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .heart-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .heart-display h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .bpm {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 10px 0;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .heart-icon {
+            font-size: 48px;
+            display: inline-block;
+            animation: heartbeat 1s ease-in-out infinite;
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            10%, 30% { transform: scale(1.1); }
+            20%, 40% { transform: scale(1); }
+        }
+        
+        .last-update {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 10px;
         }
         
         label {
@@ -30,31 +79,71 @@
             margin-bottom: 10px;
             font-weight: bold;
             font-size: 18px;
+            color: #333;
         }
         
         textarea {
             width: 100%;
             padding: 15px;
-            font-size: 20px;
+            font-size: 18px;
             border: 2px solid #ddd;
             border-radius: 8px;
             box-sizing: border-box;
-            min-height: 120px;
+            min-height: 100px;
+            resize: vertical;
         }
         
-        button.send {
+        button {
             width: 100%;
-            padding: 20px;
-            font-size: 24px;
-            background: blue;
-            color: white;
+            padding: 18px;
+            font-size: 20px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        button.send {
+            background: #4CAF50;
+            color: white;
+            margin-bottom: 10px;
         }
         
         button.send:hover {
-            background: #0056b3;
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .command-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button.command {
+            padding: 12px;
+            font-size: 14px;
+            background: #2196F3;
+            color: white;
+        }
+        
+        button.command:hover {
+            background: #0b7dda;
+        }
+        
+        button.command.active {
+            background: #ff9800;
+        }
+        
+        .status-display {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            min-height: 60px;
+            color: #666;
         }
         
         .status {
@@ -64,32 +153,110 @@
             text-align: center;
             font-size: 18px;
             display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .status.success {
             background: #d4edda;
             color: #155724;
+            border: 2px solid #c3e6cb;
         }
         
         .status.error {
             background: #f8d7da;
             color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #1976d2;
+        }
+        
+        .offline {
+            opacity: 0.5;
+        }
+        
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <h1>Send Message</h1>
+    <h1>❤️ Heart Rate Monitor</h1>
     
-    <div class="section">
-        <label>Your Message:</label>
-        <textarea id="msg" placeholder="Message here..."></textarea>
+    <!-- Heart Rate Display -->
+    <div class="heart-display">
+        <h2>Current Heart Rate</h2>
+        <div class="heart-icon">❤️</div>
+        <div class="bpm" id="bpm">--</div>
+        <div>BPM</div>
+        <div class="last-update" id="lastUpdate">Loading...</div>
     </div>
     
-    <button class="send" onclick="send()">Send</button>
+    <!-- Send Message Section -->
+    <div class="section">
+        <label>📨 Send Message:</label>
+        <textarea id="msg" placeholder="Type your message here..."></textarea>
+        <button class="send" onclick="sendMessage()">Send Message</button>
+    </div>
+    
+    <!-- Device Status -->
+    <div class="section">
+        <label>📊 Device Status:</label>
+        <div class="status-display" id="statusDisplay">Connecting...</div>
+        <button class="send" onclick="requestStatus()" style="background: #9c27b0; margin-top: 10px;">
+            🔄 Refresh Status
+        </button>
+    </div>
+    
+    <!-- Control Commands -->
+    <div class="section">
+        <label>🎮 Display Mode:</label>
+        <div class="command-buttons">
+            <button class="command" onclick="sendCommand('MODE_BOTH')" id="btnBoth">
+                Both
+            </button>
+            <button class="command" onclick="sendCommand('MODE_HR')" id="btnHR">
+                HR Only
+            </button>
+            <button class="command" onclick="sendCommand('MODE_MESSAGES')" id="btnMsg">
+                Messages
+            </button>
+            <button class="command" onclick="requestStatus()" id="btnStatus">
+                Get Status
+            </button>
+        </div>
+    </div>
+    
+    <!-- Info Box -->
+    <div class="section">
+        <div class="info-box">
+            💡 <strong>Tip:</strong> Place your finger gently on the sensor. Heart rate updates every 10 seconds.
+        </div>
+    </div>
     
     <div id="status" class="status"></div>
 
     <script>
+        // Credentials (obfuscated)
         const _0x1a2b = 'cGlua2Zvbmdsb3Zlcg==';
         const _0x3c4d = 'YWlvX3ZqSGo4M2xJWXlpSk8xWkRzOGZuTlhkWDBueng=';
         
@@ -97,28 +264,144 @@
         const USER = d(_0x1a2b);
         const KEY = d(_0x3c4d);
         
-        async function send() {
+        let currentMode = 'MODE_BOTH';
+        let refreshInterval;
+        
+        // Auto-refresh heart rate every 5 seconds
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                getHeartRate();
+                getStatus();
+            }, 5000);
+        }
+        
+        // Get latest heart rate
+        async function getHeartRate() {
+            try {
+                const response = await fetch(`https://io.adafruit.com/api/v2/${USER}/feeds/heartrate/data/last`, {
+                    headers: {'X-AIO-Key': KEY}
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch');
+                
+                const data = await response.json();
+                const bpm = data.value;
+                const timestamp = new Date(data.created_at);
+                
+                document.getElementById('bpm').textContent = bpm;
+                document.getElementById('lastUpdate').textContent = 
+                    `Updated: ${timestamp.toLocaleTimeString()}`;
+                
+                document.querySelector('.heart-display').classList.remove('offline');
+                
+            } catch(e) {
+                document.getElementById('bpm').textContent = '--';
+                document.getElementById('lastUpdate').textContent = 'No data available';
+                document.querySelector('.heart-display').classList.add('offline');
+            }
+        }
+        
+        // Get device status
+        async function getStatus() {
+            try {
+                const response = await fetch(`https://io.adafruit.com/api/v2/${USER}/feeds/status/data/last`, {
+                    headers: {'X-AIO-Key': KEY}
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch');
+                
+                const data = await response.json();
+                const timestamp = new Date(data.created_at);
+                
+                document.getElementById('statusDisplay').innerHTML = 
+                    `<strong>${data.value}</strong><br>
+                    <small>Updated: ${timestamp.toLocaleTimeString()}</small>`;
+                
+            } catch(e) {
+                document.getElementById('statusDisplay').textContent = 'Unable to get status';
+            }
+        }
+        
+        // Send message to device
+        async function sendMessage() {
             const msg = document.getElementById('msg').value.trim();
             
             if (!msg) {
-                showStatus('Enter a message', 'error');
+                showStatus('Please enter a message', 'error');
                 return;
             }
             
             try {
-                await fetch(`https://io.adafruit.com/api/v2/${USER}/feeds/message/data`, {
+                const response = await fetch(`https://io.adafruit.com/api/v2/${USER}/feeds/message/data`, {
                     method: 'POST',
-                    headers: {'X-AIO-Key': KEY, 'Content-Type': 'application/json'},
+                    headers: {
+                        'X-AIO-Key': KEY, 
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({value: msg})
                 });
                 
-                showStatus('Sent :D', 'success');
+                if (!response.ok) throw new Error('Failed to send');
+                
+                showStatus('✅ Message sent successfully!', 'success');
                 document.getElementById('msg').value = '';
+                
+                // Check for auto-reply after 2 seconds
+                setTimeout(getStatus, 2000);
+                
             } catch(e) {
-                showStatus('Failed!', 'error');
+                showStatus('❌ Failed to send message', 'error');
             }
         }
         
+        // Send command to device
+        async function sendCommand(cmd) {
+            try {
+                const response = await fetch(`https://io.adafruit.com/api/v2/${USER}/feeds/command/data`, {
+                    method: 'POST',
+                    headers: {
+                        'X-AIO-Key': KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({value: cmd})
+                });
+                
+                if (!response.ok) throw new Error('Failed to send');
+                
+                showStatus(`✅ Command sent: ${cmd}`, 'success');
+                currentMode = cmd;
+                updateButtonStates();
+                
+                // Get updated status
+                setTimeout(getStatus, 1000);
+                
+            } catch(e) {
+                showStatus('❌ Failed to send command', 'error');
+            }
+        }
+        
+        // Request status update
+        async function requestStatus() {
+            await sendCommand('STATUS');
+            setTimeout(getStatus, 1500);
+        }
+        
+        // Update button active states
+        function updateButtonStates() {
+            document.querySelectorAll('.command').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (currentMode === 'MODE_BOTH') {
+                document.getElementById('btnBoth').classList.add('active');
+            } else if (currentMode === 'MODE_HR') {
+                document.getElementById('btnHR').classList.add('active');
+            } else if (currentMode === 'MODE_MESSAGES') {
+                document.getElementById('btnMsg').classList.add('active');
+            }
+        }
+        
+        // Show status message
         function showStatus(text, type) {
             const s = document.getElementById('status');
             s.textContent = text;
@@ -126,6 +409,26 @@
             s.style.display = 'block';
             setTimeout(() => s.style.display = 'none', 3000);
         }
+        
+        // Keyboard shortcuts
+        document.getElementById('msg').addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            getHeartRate();
+            getStatus();
+            startAutoRefresh();
+            updateButtonStates();
+        });
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) clearInterval(refreshInterval);
+        });
     </script>
 </body>
 </html>
