@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Heart Rate Monitor</title>
+    <title>Message Display</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,17 +29,17 @@
         
         .heart-rate {
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             background: #f8f8f8;
             border-radius: 8px;
             margin-bottom: 10px;
         }
         
         .bpm {
-            font-size: 48px;
+            font-size: 36px;
             font-weight: bold;
             color: #e74c3c;
-            margin: 10px 0;
+            margin: 5px 0;
         }
         
         .label {
@@ -55,7 +55,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             box-sizing: border-box;
-            min-height: 80px;
+            min-height: 100px;
         }
         
         button {
@@ -75,24 +75,6 @@
         
         button.send:active {
             background: #2980b9;
-        }
-        
-        .commands {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        
-        button.cmd {
-            padding: 10px;
-            font-size: 14px;
-            background: #ecf0f1;
-            color: #333;
-        }
-        
-        button.cmd:active {
-            background: #bdc3c7;
         }
         
         .status-box {
@@ -132,40 +114,29 @@
     </style>
 </head>
 <body>
-    <h1>Heart Rate Monitor</h1>
+    <h1>Message Display</h1>
     
     <!-- Heart Rate -->
     <div class="section">
         <div class="heart-rate">
-            <div class="label">Current BPM</div>
+            <div class="label">Heart Rate</div>
             <div class="bpm" id="bpm">--</div>
-            <div class="update-time" id="hrUpdate">Loading...</div>
+            <div class="update-time" id="hrUpdate">No data</div>
         </div>
     </div>
     
     <!-- Send Message -->
     <div class="section">
         <div class="label">Send Message</div>
-        <textarea id="msg" placeholder="Type message..."></textarea>
-        <button class="send" onclick="sendMessage()">Send</button>
+        <textarea id="msg" placeholder="Type your message..."></textarea>
+        <button class="send" onclick="sendMessage()">Send Message</button>
     </div>
     
     <!-- Status -->
     <div class="section">
         <div class="label">Device Status</div>
         <div class="status-box" id="statusDisplay">Connecting...</div>
-        <button class="send" onclick="requestStatus()">Refresh Status</button>
-    </div>
-    
-    <!-- Commands -->
-    <div class="section">
-        <div class="label">Display Mode</div>
-        <div class="commands">
-            <button class="cmd" onclick="sendCommand('MODE_BOTH')">Both</button>
-            <button class="cmd" onclick="sendCommand('MODE_HR')">HR Only</button>
-            <button class="cmd" onclick="sendCommand('MODE_MESSAGES')">Messages</button>
-            <button class="cmd" onclick="requestStatus()">Status</button>
-        </div>
+        <button class="send" onclick="getStatus()" style="background: #95a5a6;">Refresh Status</button>
     </div>
     
     <div id="status" class="status"></div>
@@ -180,7 +151,6 @@
         
         let refreshInterval;
         
-        // Auto-refresh every 5 seconds
         function startAutoRefresh() {
             refreshInterval = setInterval(() => {
                 getHeartRate();
@@ -188,7 +158,6 @@
             }, 5000);
         }
         
-        // Get heart rate
         async function getHeartRate() {
             try {
                 const response = await fetch(`https://io.adafruit.com/api/v2/${USER}/feeds/heartrate/data/last`, {
@@ -207,7 +176,6 @@
             }
         }
         
-        // Get status
         async function getStatus() {
             try {
                 const response = await fetch(`https://io.adafruit.com/api/v2/${USER}/feeds/status/data/last`, {
@@ -221,16 +189,15 @@
                     `${data.value}<br><small style="color:#999">${time}</small>`;
                 
             } catch(e) {
-                document.getElementById('statusDisplay').textContent = 'No status';
+                document.getElementById('statusDisplay').textContent = 'No status available';
             }
         }
         
-        // Send message
         async function sendMessage() {
             const msg = document.getElementById('msg').value.trim();
             
             if (!msg) {
-                showStatus('Enter a message', 'error');
+                showStatus('Please enter a message', 'error');
                 return;
             }
             
@@ -241,39 +208,15 @@
                     body: JSON.stringify({value: msg})
                 });
                 
-                showStatus('Sent!', 'success');
+                showStatus('Message sent!', 'success');
                 document.getElementById('msg').value = '';
                 setTimeout(getStatus, 2000);
                 
             } catch(e) {
-                showStatus('Failed', 'error');
+                showStatus('Failed to send', 'error');
             }
         }
         
-        // Send command
-        async function sendCommand(cmd) {
-            try {
-                await fetch(`https://io.adafruit.com/api/v2/${USER}/feeds/command/data`, {
-                    method: 'POST',
-                    headers: {'X-AIO-Key': KEY, 'Content-Type': 'application/json'},
-                    body: JSON.stringify({value: cmd})
-                });
-                
-                showStatus('Command sent', 'success');
-                setTimeout(getStatus, 1000);
-                
-            } catch(e) {
-                showStatus('Failed', 'error');
-            }
-        }
-        
-        // Request status
-        async function requestStatus() {
-            await sendCommand('STATUS');
-            setTimeout(getStatus, 1500);
-        }
-        
-        // Show status message
         function showStatus(text, type) {
             const s = document.getElementById('status');
             s.textContent = text;
@@ -282,7 +225,6 @@
             setTimeout(() => s.style.display = 'none', 2000);
         }
         
-        // Initialize
         window.addEventListener('load', () => {
             getHeartRate();
             getStatus();
